@@ -20,15 +20,4 @@ const app = new Vue({
 });
 
 
-require('lightgallery');
-require('lg-autoplay');
-require('lg-fullscreen');
-require('lg-hash');
-require('lg-pager');
-require('lg-share');
-require('lg-thumbnail');
-require('lg-video');
-require('lg-zoom');
-
-require('jquery-mousewheel');
 

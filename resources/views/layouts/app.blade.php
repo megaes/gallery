@@ -17,6 +17,10 @@
     <script>
         window.Laravel = {!! json_encode(['csrfToken' => csrf_token()]) !!};
     </script>
+
+    <style>
+        @yield('debug style')
+    </style>
 </head>
 <body>
     <div id="app">

@@ -44,3 +44,18 @@ window.axios.defaults.headers.common = {
 //     broadcaster: 'pusher',
 //     key: 'your-pusher-key'
 // });
+
+require('lightgallery');
+require('lg-autoplay');
+require('lg-fullscreen');
+require('lg-hash');
+require('lg-pager');
+require('lg-share');
+require('lg-thumbnail');
+require('lg-video');
+require('lg-zoom');
+
+require('jquery-mousewheel');
+
+window.imagesLoaded = require('imagesloaded');
+window.Masonry = require('masonry-layout');
