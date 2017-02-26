@@ -21,15 +21,32 @@ class HomeController extends Controller
     public function index(Request $request) {
         if ($request->has("thumbnails")) {
             $maxSize = 250;
-            for($i = 1; $i <= 16; ++$i) {
-                $img = Image::make("resources/img/{$i}.jpg");
+            for($i = 1; $i <= 500; ++$i) {
+                $n = max(1, $i % 16 );
+                $img = Image::make("resources/src/{$n}.jpg");
                 $width = $img->getWidth();
                 $height = $img->getHeight();
-                $k = $maxSize / $width;
-                $img->resize($width * $k, $height * $k);
+/*
+                $k = 3/2;
+                if($width > $height) {
+
+                    if($width > $height * $k) {
+                        $img->resizeCanvas(round($height * $k), $height, 'center');
+                    } else {
+                        $img->resizeCanvas($width, round($width / $k), 'center');
+                    }
+                } else {
+                    if($width * $k < $height) {
+                        $img->resizeCanvas($width, round($width * $k), 'top');
+                    } else {
+                        $img->resizeCanvas(round($height / $k), $height,'top');
+                    }
+                }
+    */
+                $img->fit(300);
                 $img->save("resources/img/tn-{$i}.jpg");
             }
-            return "process images";
+            return "thumbnails updated!";
         }
         return view('canvas');
     }

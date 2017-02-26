@@ -24,7 +24,7 @@
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-default {{ Auth::guest() ? 'navbar-static-top' : 'navbar-fixed-top' }}">
+        <nav class="navbar navbar-default navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
 
@@ -46,7 +46,7 @@
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">
                     <!-- Left Side Of Navbar -->
                     <ul class="nav navbar-nav">
-                        @yield('gallery navbar')    &nbsp;
+                        @yield('gallery navbar')
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -86,6 +86,10 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        window.lazySizesConfig = window.lazySizesConfig || {};
+        window.lazySizesConfig.init = false;
+    </script>
     <script src="{{ mix('/js/app.js') }}"></script>
 
     @yield('debug script')

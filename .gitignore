@@ -7,7 +7,7 @@
 Homestead.json
 Homestead.yaml
 .env
-.log
+*.log
 .phpstorm.meta.php
 _ide_helper.php
 

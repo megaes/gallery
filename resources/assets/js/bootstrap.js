@@ -57,5 +57,5 @@ require('lg-zoom');
 
 require('jquery-mousewheel');
 
-window.imagesLoaded = require('imagesloaded');
-window.Masonry = require('masonry-layout');
+require('lazysizes');
+window.Isotope = require('isotope-layout');
