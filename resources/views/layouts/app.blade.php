@@ -86,10 +86,6 @@
     </div>
 
     <!-- Scripts -->
-    <script>
-        window.lazySizesConfig = window.lazySizesConfig || {};
-        window.lazySizesConfig.init = false;
-    </script>
     <script src="{{ mix('/js/app.js') }}"></script>
 
     @yield('debug script')

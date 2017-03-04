@@ -23,63 +23,64 @@ h1 {
 }
 
 #gallery > .grid-item {
-  border: 2px solid $body-bg;
-  overflow: hidden;
-  padding: 0;
-  position: relative;
+    //border: 2px solid $body-bg;
+    border: 2px solid rgb(255, 255, 255);
+    overflow: hidden;
+    padding: 0;
+    position: relative;
 
-  > .lazyload, > .lazyloading {
-    opacity: 0.0;
-    position: absolute;
+    > .lazyload, > .lazyloading {
+        opacity: 0.0;
+        position: absolute;
 
-    width: 100%;
-    height: auto;
-  }
+        width: 100%;
+        height: auto;
+    }
 
-  > .lazyloaded {
-    opacity: 1.0;
-    position: absolute;
+    > .lazyloaded {
+        opacity: 1.0;
+        position: absolute;
 
-    width: 100%;
-    height: auto;
+        width: 100%;
+        height: auto;
 
-    transition: transform 0.5s ease 0s, opacity 1.0s ease 0s;
-    transform: scale3d(1.0, 1.0, 1.0);
-  }
+        transition: transform 0.5s ease 0s, opacity 1.0s ease 0s;
+        transform: scale3d(1.0, 1.0, 1.0);
+    }
 
-  &:hover > .lazyloaded {
+    &:hover > .lazyloaded {
     transform: scale3d(1.1, 1.1, 1.1);
-  }
+    }
 
-  &:hover .demo-gallery-poster > i {
+    &:hover .demo-gallery-poster > i {
     opacity: 1.0;
-  }
+    }
 
-  .demo-gallery-poster {
-    background-color: rgba(0, 0, 0, 0);
-    bottom: 0;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    transition: background-color 0.5s ease 0s;
-  }
+    .demo-gallery-poster {
+        background-color: rgba(0, 0, 0, 0);
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        transition: background-color 0.5s ease 0s;
+    }
 
-  .demo-gallery-poster > i {
-    font-size: 24px;
-    color: rgb(255, 255, 255);
-    left: 5%;
-    //        margin-left: -12px;
-    //        margin-top: -12px;
-    opacity: 0;
-    position: absolute;
-    top: 5%;
-    transition: opacity 0.3s ease 0s;
-  }
+    .demo-gallery-poster > i {
+        font-size: 24px;
+        color: rgb(255, 255, 255);
+        left: 5%;
+        //        margin-left: -12px;
+        //        margin-top: -12px;
+        opacity: 0;
+        position: absolute;
+        top: 5%;
+        transition: opacity 0.3s ease 0s;
+    }
 
-  &:hover .demo-gallery-poster {
+    &:hover .demo-gallery-poster {
     background-color: rgba(0, 0, 0, 0.6);
-  }
+    }
 }
 
 #scrollup {

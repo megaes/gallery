@@ -58,4 +58,8 @@ require('lg-zoom');
 require('jquery-mousewheel');
 
 require('lazysizes');
+
+window.lazySizesConfig = window.lazySizesConfig || {};
+window.lazySizesConfig.init = false;
+
 window.Isotope = require('isotope-layout');

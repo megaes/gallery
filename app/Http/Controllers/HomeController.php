@@ -89,13 +89,8 @@ class HomeController extends Controller
         $user = Auth::user();
         $path = 'resources/'.hash("sha1",$user->email).'/';
         $albums = $user->albums()->where('type', 'photo')->get();
-        $resources = DB::select('select name, caption, tn_aspect_ratio from resources where album_id = ?', [$albums->first()->id]);
+        $frames = DB::select('select name, caption, tn_aspect_ratio from resources where album_id = ?', [$albums->first()->id]);
 
-        foreach ($resources as $resource) {
-            $resource->tn_name = "{$path}{$resource->name}-tn.jpg";
-            $resource->name = "{$path}{$resource->name}.jpg";
-        }
-
-        return view('canvas', compact('albums', 'resources'));
+        return view('canvas', compact('albums', 'path', 'frames'));
     }
 }
