@@ -11,16 +11,12 @@
     <title>{{ config('app.name') }}</title>
 
     <!-- Styles -->
-    <link href="{{ mix('/css/app.css') }}" rel="stylesheet">
+    <link href="{{ mix('/css/all.css') }}" rel="stylesheet">
 
     <!-- Scripts -->
     <script>
         window.Laravel = {!! json_encode(['csrfToken' => csrf_token()]) !!};
     </script>
-
-    <style>
-        @yield('debug style')
-    </style>
 </head>
 <body>
     <div id="app">
@@ -87,7 +83,5 @@
 
     <!-- Scripts -->
     <script src="{{ mix('/js/app.js') }}"></script>
-
-    @yield('debug script')
 </body>
 </html>

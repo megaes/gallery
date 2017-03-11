@@ -20,7 +20,8 @@ mix.webpackConfig({
         }
     })
    .js('resources/assets/js/app.js', 'public/js')
-   .sass('resources/assets/sass/app.scss', 'public/css');
+   .sass('resources/assets/sass/app.scss', 'public/css')
+   .combine(['public/css/app.css', 'resources/assets/css/font-awesome.css'], 'public/css/all.css');
 
 
 if (mix.config.inProduction) {

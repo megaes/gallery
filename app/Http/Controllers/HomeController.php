@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Resource;
 use Image;
 
 
@@ -68,29 +70,59 @@ class HomeController extends Controller
                     '66.88',
                     '66.88'];
 
-        for($i = 601; $i <= 1000; ++$i) {
+        for($i = 901; $i <= 1000; ++$i) {
             //$n = $i;
             $n = rand(1, 16);
+
             $img = Image::make("resources/0/{$n}-tn.jpg");
             $img->save("resources/0/{$i}-tn.jpg");
-            $resource = new \App\Resource;
+            $img = Image::make("resources/0/{$n}.jpg");
+            $img->save("resources/0/{$i}.jpg");
+
+            $resource = new Resource;
           //  $resource->tn_aspect_ratio = 100.0 * $this->createThumbnail("{$n}");
             $resource->tn_aspect_ratio = $aspects[$n-1];
             $resource->album_id = 1;
             $resource->name = "{$i}";
             $resource->caption = "Caption {$i}";
             $resource->save();
+
         }
-        return "thumbnails updated!!";
+        return "thumbnails updated!!!!";
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $user = Auth::user();
-        $path = 'resources/'.hash("sha1",$user->email).'/';
-        $albums = $user->albums()->where('type', 'photo')->get();
-        $frames = DB::select('select name, caption, tn_aspect_ratio from resources where album_id = ?', [$albums->first()->id]);
-
-        return view('canvas', compact('albums', 'path', 'frames'));
+        return view('canvas');
     }
+
+    public function get($album_id)
+    {
+         return DB::select('select id, name, caption, tn_aspect_ratio from resources where album_id = ?', [$album_id]);
+    }
+    public function updateCaption(Request $request, Resource $resource)
+    {
+        if (!$request->has('caption')) {
+            return response('', 400);
+        }
+        $resource->caption = $request->input('caption');
+        $resource->save();
+        return 'ok';
+    }
+
+    public function delete(Request $request)
+    {
+        if($request->has('ids')) {
+            $path = user_path();
+            $ids = $request->input('ids');
+            $resources = Resource::findMany($ids, ["name"]);
+            foreach($resources as $resource) {
+                Storage::delete(["{$path}{$resource->name}-tn.jpg", "{$path}{$resource->name}.jpg"]);
+            }
+            Resource::destroy($ids);
+        }
+        return 'ok';
+    }
+
 }
+

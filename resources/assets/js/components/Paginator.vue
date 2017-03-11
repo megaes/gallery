@@ -17,7 +17,7 @@
 </template>
 
 <script>
-    import { eventBus } from '../app.js';
+    import { event } from '../app.js';
 
     export default {
         data() {
@@ -29,11 +29,11 @@
         computed: {
         },
         created() {
-            eventBus.$on('page-turn', (page) => {
+            event.$on('turnThePage', (page) => {
                 this.activePage = page;
             });
-            eventBus.$on('pageCount-change', (pageCount) => {
-                this.activePage = 1;
+            event.$on('setPageCount', (pageCount) => {
+                this.activePage = Math.min(this.activePage, pageCount);
                 this.pageCount = pageCount;
             });
         },
@@ -51,7 +51,7 @@
                     return;
                 }
 
-                eventBus.$emit('page-turn', clickedPage);
+                event.$emit('turnThePage', clickedPage);
             }
         }
     }

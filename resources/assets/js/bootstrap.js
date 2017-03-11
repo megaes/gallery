@@ -25,6 +25,7 @@ window.Vue = require('vue');
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
+require('es6-promise').polyfill();
 window.axios = require('axios');
 
 window.axios.defaults.headers.common = {
@@ -58,8 +59,5 @@ require('lg-zoom');
 require('jquery-mousewheel');
 
 require('lazysizes');
-
-window.lazySizesConfig = window.lazySizesConfig || {};
-window.lazySizesConfig.init = false;
 
 window.Isotope = require('isotope-layout');

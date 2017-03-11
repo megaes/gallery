@@ -14,6 +14,9 @@
 
 Auth::routes();
 
+Route::patch('/resource/{resource}', 'HomeController@updateCaption');
+Route::post('/delete', 'HomeController@delete');
+Route::post('/{album_id}', 'HomeController@get');
 Route::get('/', 'HomeController@index');
 
 Route::get('/thumbnails', 'HomeController@thumbnails');

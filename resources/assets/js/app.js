@@ -13,10 +13,12 @@ require('./bootstrap');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('paginator', require('./components/Paginator.vue'));
-Vue.component('gallery', require('./components/Gallery.vue'));
+export const event = new Vue();
 
-export const eventBus = new Vue();
+Vue.component('paginator', require('./components/Paginator.vue'));
+Vue.component('confirmation', require('./components/Confirmation.vue'));
+Vue.component('frame', require('./components/Frame.vue'));
+Vue.component('gallery', require('./components/Gallery.vue'));
 
 const app = new Vue({
     el: '#app'
