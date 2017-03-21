@@ -6,6 +6,11 @@
             outline: none;
             text-align: center;
             width: 98%;
+            &::-ms-clear, &::-ms-reveal {
+                display: none;
+                width : 0;
+                height: 0;
+            }
         }
     }
 </style>

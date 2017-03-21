@@ -18,18 +18,18 @@
         window.Laravel = {!! json_encode(['csrfToken' => csrf_token()]) !!};
     </script>
 </head>
-<body>
+<body style="padding-top: 60px; overflow-y: scroll;">
     <div id="app">
-        <nav class="navbar navbar-default navbar-static-top">
+        <nav class="navbar navbar-default navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
 
                     <!-- Collapsed Hamburger -->
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#app-navbar-collapse">
                         <span class="sr-only">Toggle Navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
+                        <span class="icon-bar top-bar"></span>
+                        <span class="icon-bar middle-bar"></span>
+                        <span class="icon-bar bottom-bar"></span>
                     </button>
 
                     @if (Auth::guest())
@@ -41,7 +41,7 @@
 
                 <div class="collapse navbar-collapse" id="app-navbar-collapse">
                     <!-- Left Side Of Navbar -->
-                    <ul class="nav navbar-nav">
+                    <ul class="nav navbar-nav navbar-left">
                         @yield('gallery navbar')
                     </ul>
 
@@ -51,20 +51,20 @@
                         @if (Auth::guest())
                             <li>
                                 <a href="{{ route('login') }}">
-                                    <span class="glyphicon glyphicon-log-in"></span>
+                                    <i class="fa fa-lg fa-sign-in" aria-hidden="true"></i>
                                     Login
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('register') }}">
-                                    <span class="glyphicon glyphicon-user"></span>
+                                    <i class="fa fa-lg fa-user" aria-hidden="true"></i>
                                     Register
                                 </a>
                             </li>
                         @else
                             <li>
                                 <a href="{{ route('logout') }}" onclick="event.preventDefault(); $('#logout-form').submit();">
-                                    <span class="glyphicon glyphicon-log-out"></span>
+                                    <i class="fa fa-lg fa-sign-out" aria-hidden="true"></i>
                                     Logout
                                 </a>
 
@@ -83,5 +83,11 @@
 
     <!-- Scripts -->
     <script src="{{ mix('/js/app.js') }}"></script>
+    <script>
+        $(".js-example-tags").select2({
+            tags: true,
+            width: ''
+        })
+    </script>
 </body>
 </html>

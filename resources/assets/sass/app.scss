@@ -8,13 +8,98 @@
 // Bootstrap
 @import "node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
 
+// Select2
+@import "node_modules/select2/src/scss/core";
+@import "node_modules/select2-bootstrap-theme/src/select2-bootstrap";
+
 // LightGallery
 @import "node_modules/lightgallery/src/sass/lightgallery";
 
 
-.scrollable-menu {
+// fix for jumpy navbar in Chrome
+.navbar-fixed-top {
+    backface-visibility: hidden;
+}
+
+.navbar-toggle {
+    border: none;
+    background: transparent !important;
+
+    &:hover {
+        background: transparent !important;
+    }
+    .icon-bar {
+        width: 22px;
+        transition: all 0.2s;
+    }
+    .top-bar {
+        transform: rotate(-45deg);
+        transform-origin: 90% 10%;
+    }
+    .middle-bar {
+        opacity: 0;
+    }
+    .bottom-bar {
+        transform: rotate(45deg);
+        transform-origin: 90% 90%;
+    }
+    &.collapsed {
+        .top-bar {
+            transform: rotate(0);
+        }
+        .middle-bar {
+            opacity: 1;
+        }
+        .bottom-bar {
+            transform: rotate(0);
+        }
+    }
+}
+
+.dropdown-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: auto;
+}
+
+.noscroll {
+    position: fixed;
+    //overflow-y: scroll;
+    width: 100%;
+}
+
+
+.modal-open {
+    padding-right: 0 !important;
+}
+
+
+.xzzzy {
   height: auto;
   max-height: 200px;
   overflow-x: hidden;
 }
 
+.select2-tags {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media (min-width: $screen-sm-min) {
+    .select2-tags {
+        width: $select2-tags-sm-width;
+    }
+}
+
+@media (min-width: $screen-md-min) {
+    .select2-tags {
+        width: $select2-tags-sm-width + $screen-md-min - $screen-sm-min;
+    }
+}
+
+@media (min-width: $screen-lg-min) {
+    .select2-tags {
+        width: $select2-tags-sm-width + $screen-lg-min - $screen-sm-min;
+    }
+}

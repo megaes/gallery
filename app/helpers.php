@@ -1,5 +1,6 @@
 <?php
 
+/*
 use Illuminate\Support\Facades\Auth;
 
 if (!function_exists('user_path')) {
@@ -15,4 +16,4 @@ if (!function_exists('public_user_path')) {
         return 'storage/'.user_path();
     }
 }
-
+*/

@@ -1,3 +1,4 @@
+require("babel-polyfill");
 
 window._ = require('lodash');
 
@@ -25,7 +26,6 @@ window.Vue = require('vue');
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-require('es6-promise').polyfill();
 window.axios = require('axios');
 
 window.axios.defaults.headers.common = {
@@ -57,6 +57,10 @@ require('lg-video');
 require('lg-zoom');
 
 require('jquery-mousewheel');
+
+require('select2');
+
+$.fn.select2.defaults.set( "theme", "bootstrap" );
 
 require('lazysizes');
 

@@ -2,43 +2,22 @@
 
 @section('gallery navbar')
 <li>
-    <a href="{{ url('/') }}" onclick="event.preventDefault(); $('#media-form').submit();">
-        <span class="glyphicon glyphicon-picture"></span>
-        Photo
+    <a href="#">
+        <i class="fa fa-lg fa-upload" aria-hidden="true"></i>
+        Upload
     </a>
-    <form id="media-form" action="{{ url('/') }}" method="POST" style="display: none;">
-        {{ csrf_field() }}
-    </form>
 </li>
-<li class="dropdown">
-    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Albums <span class="caret"></span></a>
-    <ul class="dropdown-menu scrollable-menu">
-        <li><a href="#">New</a></li>
-        <li role="separator" class="divider"></li>
-        <li><a href="#">Another action</a></li>
-        <li><a href="#">Something else here</a></li>
-        <li><a href="#">Action</a></li>
-        <li><a href="#">Another action</a></li>
-        <li><a href="#">Something else here</a></li>
-        <li><a href="#">Action</a></li>
-        <li><a href="#">Another action</a></li>
-        <li><a href="#">Something else here</a></li>
-        <li><a href="#">Action</a></li>
-        <li><a href="#">Another action</a></li>
-        <li><a href="#">Something else here</a></li>
-        <li><a href="#">Action</a></li>
-        <li><a href="#">Another action</a></li>
-    </ul>
-</li>
-
+<li is="album-selector"></li>
 <li>
-    <form class="navbar-form">
-        <div class="input-group">
-            <input id="search-input" type="text" class="form-control" placeholder="Search for...">
+    <form class="navbar-form select2-tags">
+        <div class="input-group select2-bootstrap-append">
+            <select class="js-example-tags form-control" multiple="multiple">
+                <option selected="selected">orange</option>
+                <option>white</option>
+                <option selected="selected">purple</option>
+            </select>
             <span class="input-group-btn">
-                <button class="btn btn-default">
-                    <i class="glyphicon glyphicon-search"></i>
-                </button>
+                <button class="btn btn-default" type="button">Filter</button>
             </span>
         </div>
     </form>
@@ -47,8 +26,8 @@
 
 @section('content')
     <div class="container-fluid">
-        <div id="album" class="row text-center">
-            <h1>Album 1</h1>
+        <div class="row text-center">
+            <album></album>
         </div>
 
         <div class="row text-center">
@@ -56,16 +35,11 @@
         </div>
 
         <div class="row">
-            <gallery path = '{{ public_user_path() }}'></gallery>
+            <gallery></gallery>
         </div>
 
         <div class="row text-center">
             <paginator></paginator>
         </div>
-
-        <div id="scrollup" class="button" style="display: none;"></div>
     </div>
 @endsection
-
-
-

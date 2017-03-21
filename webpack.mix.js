@@ -11,17 +11,23 @@ const { mix } = require('laravel-mix');
  |
  */
 
+mix.options({
+    extractVueStyles: 'public/css/vue-css.css',
+    purifyCss: true,
+});
+
 mix.webpackConfig({
-        resolve: {
-            alias: {
-                'masonry': 'masonry-layout',
-                'isotope': 'isotope-layout'
-            }
+    resolve: {
+        alias: {
+            'masonry': 'masonry-layout',
+            'isotope': 'isotope-layout'
         }
-    })
-   .js('resources/assets/js/app.js', 'public/js')
+    }
+});
+
+mix.js('resources/assets/js/app.js', 'public/js')
    .sass('resources/assets/sass/app.scss', 'public/css')
-   .combine(['public/css/app.css', 'resources/assets/css/font-awesome.css'], 'public/css/all.css');
+   .combine(['public/css/app.css', 'resources/assets/css/font-awesome.css', 'public/css/vue-css.css'], 'public/css/all.css');
 
 
 if (mix.config.inProduction) {
