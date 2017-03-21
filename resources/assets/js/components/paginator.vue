@@ -37,8 +37,6 @@
                 this.pageCount = pageCount;
             });
         },
-        mounted() {
-        },
         methods: {
             onClick(clickedPage) {
                 if(clickedPage == 0) {

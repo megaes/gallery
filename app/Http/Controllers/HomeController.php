@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Resource;
+use App\Album;
 use Image;
 
 
@@ -95,34 +96,5 @@ class HomeController extends Controller
     {
         return view('canvas');
     }
-
-    public function get($album_id)
-    {
-         return DB::select('select id, name, caption, tn_aspect_ratio from resources where album_id = ?', [$album_id]);
-    }
-    public function updateCaption(Request $request, Resource $resource)
-    {
-        if (!$request->has('caption')) {
-            return response('', 400);
-        }
-        $resource->caption = $request->input('caption');
-        $resource->save();
-        return 'ok';
-    }
-
-    public function delete(Request $request)
-    {
-        if($request->has('ids')) {
-            $path = user_path();
-            $ids = $request->input('ids');
-            $resources = Resource::findMany($ids, ["name"]);
-            foreach($resources as $resource) {
-                Storage::delete(["{$path}{$resource->name}-tn.jpg", "{$path}{$resource->name}.jpg"]);
-            }
-            Resource::destroy($ids);
-        }
-        return 'ok';
-    }
-
 }
 

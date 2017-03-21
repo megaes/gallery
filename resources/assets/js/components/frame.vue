@@ -38,7 +38,7 @@
             }
 
             textarea {
-                background-color: rgba(0, 0, 0, 0);
+                background-color: transparent;
                 resize: none;
                 overflow: hidden;
                 text-align: center;
@@ -64,13 +64,13 @@
 </style>
 
 <template>
-        <div class="gallery-frame col-xs-6 col-sm-4 col-md-3 col-lg-2" :class="{'active': activity}" @mouseover="activity |= 1" @mouseleave="activity &= 110">
+        <div class="gallery-frame col-xs-6 col-sm-4 col-md-3 col-lg-2" :class="{'active': frame.activity}" @mouseover="frame.activity |= 10" @mouseleave="frame.activity &= 101">
 
             <img :class="{'lazyload' : frame.load}" :data-src="path + frame.name + '-tn.jpg'"> </img>
 
             <div class="controls">
-                <textarea maxlength="50" class="form-control" v-model="frame.caption" @click="activity |= 10" @blur="activity &= 101" @keydown.prevent.enter="captionUpdate"></textarea>
-                <i class="fa fa-lg" :class="[frame.selected ? 'fa-check-square-o' : 'fa-square-o']" style="left: 15%; top: 6px;" @click="clickChecker"></i>
+                <textarea maxlength="50" class="form-control" v-model="frame.caption" @click="frame.activity |= 100" @blur="frame.activity &= 11" @keydown.prevent.enter="captionUpdate"></textarea>
+                <i class="fa fa-lg" :class="[(frame.activity & 1) ? 'fa-check-square-o' : 'fa-square-o']" style="left: 15%; top: 6px;" @click="frame.activity ^= 1"></i>
                 <i class="fa fa-lg fa-search" style="left: 50%; top: 5px; margin-left: -0.5em" @click="$emit('showGallery')"></i>
                 <i class="fa fa-lg fa-times" style="right: 15%; top: 5px;" @click="$emit('delete')"></i>
             </div>
@@ -82,22 +82,9 @@
 <script>
     export default {
         props: ['path', 'frame'],
-        data() {
-            return {
-                activity: 0,
-            };
-        },
         methods: {
-            clickChecker() {
-                this.frame.selected = !this.frame.selected;
-                if(this.frame.selected) {
-                    this.activity |= 100;
-                } else {
-                    this.activity &= 11;
-                }
-            },
             captionUpdate() {
-                axios.patch('/resource/' + this.frame.id, {
+                axios.patch('/resources/' + this.frame.id, {
                     caption: this.frame.caption
                 });
             }
