@@ -43,6 +43,11 @@ class ResourceController extends Controller
             foreach($resources as $resource) {
                 Storage::delete(["{$path}{$resource->name}-tn.jpg", "{$path}{$resource->name}.jpg"]);
             }
+            if($album->type == 'video') {
+                foreach($resources as $resource) {
+                    Storage::delete("{$path}{$resource->name}.mp4");
+                }
+            }
             Resource::destroy($ids);
         }
         return '';

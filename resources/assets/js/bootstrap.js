@@ -65,3 +65,6 @@ $.fn.select2.defaults.set( "theme", "bootstrap" );
 require('lazysizes');
 
 window.Isotope = require('isotope-layout');
+
+window.Dropzone = require("dropzone");
+Dropzone.autoDiscover = false;

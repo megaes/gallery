@@ -16,6 +16,7 @@ require('./bootstrap');
 export const event = new Vue();
 
 Vue.component('album-selector', require('./components/album-selector.vue'));
+Vue.component('uploader', require('./components/uploader.vue'));
 Vue.component('album', require('./components/album.vue'));
 Vue.component('paginator', require('./components/paginator.vue'));
 Vue.component('modal-window', require('./components/modal-window.vue'));

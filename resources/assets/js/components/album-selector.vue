@@ -24,7 +24,11 @@
             return {
               albums: [],
               type: 'photo',
-              current_album_id: -1,
+              current_album: {
+                  id: -1,
+                  name: '',
+                  type: 'photo'
+              },
               modal_options: {
                   title: '',
                   body: '',
@@ -41,36 +45,36 @@
             }
         },
         mounted() {
+            event.$on('requestCurrentAlbum',() => event.$emit('responseCurrentAlbum', this.current_album)),
             event.$on('updateAlbumName', name => {
-                let album = this.albums.find(album => album.id == this.current_album_id);
                 if(name) {
-                    axios.patch('/albums/' + this.current_album_id, {
+                    axios.patch('/albums/' + this.current_album.id, {
                         name: name
                     }).then(() => {
-                        album.name = name;
+                        this.current_album.name = name;
                     }).catch(() => {
-                        event.$emit('setAlbumName', album.name);
+                        event.$emit('setAlbumName', this.current_album.name);
                     });
                 } else {
-                    event.$emit('setAlbumName', album.name);
+                    event.$emit('setAlbumName', this.current_album.name);
                 }
             });
             axios.get('/albums').then(response => {
                 let defaultAlbum = response.data.find(album => album.type == this.type);
                 this.albums = response.data;
-                this.loadAlbum(defaultAlbum === undefined ? {id: 0, name: '', type: this.type} : defaultAlbum);
+                this.loadAlbum((defaultAlbum === undefined) ? {id: 0, name: '', type: this.type} : defaultAlbum);
             });
         },
         methods: {
             loadAlbum(newAlbum) {
-                if(newAlbum.id == this.current_album_id) {
+                if(newAlbum.id == this.current_album.id) {
                     return;
                 }
                 event.$once('responseSelectedFrames', frames => {
-                    if(frames.length && (newAlbum.type != this.albums.find(album => album.id == this.current_album_id).type)) {
-                        return;
-                    }
                     if(frames.length) {
+                        if(newAlbum.type != this.current_album.type) {
+                            return;
+                        }
                         axios.patch('/albums/' + newAlbum.id, {
                             frames: frames
                         }).then(() => {
@@ -87,8 +91,8 @@
                             $('#album-size-modal').modal('show');
                         });
                     } else {
-                        this.current_album_id = newAlbum.id;
-                        event.$emit('loadAlbum', newAlbum.id);
+                        this.current_album = newAlbum;
+                        event.$emit('loadAlbum', newAlbum);
                         event.$emit('setAlbumName', newAlbum.name);
                     }
                 });
@@ -96,7 +100,7 @@
             },
             newAlbum() {
                 event.$once('responseSelectedFrames', frames => {
-                    if(frames.length && (this.type != this.albums.find(album => album.id == this.current_album_id).type)) {
+                    if(frames.length && (this.type != this.current_album.type)) {
                         return;
                     }
                     axios.post('/albums/create', {
@@ -104,14 +108,17 @@
                         frames: frames
                     }).then(response => {
                         this.albums.push(response.data);
-                        this.current_album_id = response.data.id;
-                        event.$emit('loadAlbum', response.data.id);
+                        this.current_album = response.data;
+                        event.$emit('loadAlbum', response.data);
                         event.$emit('setAlbumName', response.data.name);
                     });
                 });
                 event.$emit('requestSelectedFrames');
             },
             deleteAlbum() {
+                if(this.current_album.id < 1) {
+                    return;
+                }
                 this.modal_options = {
                     title: 'Confirm',
                     body: 'Are you sure you want to delete the album?',
@@ -126,12 +133,12 @@
                 if(!this.modal_options.isCancelBtn) {
                     return;
                 }
-                axios.delete('/albums/' + this.current_album_id).then(() => {
-                    this.albums = this.albums.filter(album => album.id != this.current_album_id);
+                axios.delete('/albums/' + this.current_album.id).then(() => {
+                    this.albums = this.albums.filter(album => album.id != this.current_album.id);
                     let defaultAlbum = this.albums.find(album => album.type == this.type);
-                    this.current_album_id = (defaultAlbum === undefined) ? 0 : defaultAlbum.id;
-                    event.$emit('loadAlbum', this.current_album_id);
-                    event.$emit('setAlbumName', this.current_album_id ? defaultAlbum.name : '');
+                    this.current_album = (defaultAlbum === undefined) ? {id: 0, name: '', type: this.type} : defaultAlbum;
+                    event.$emit('loadAlbum', this.current_album);
+                    event.$emit('setAlbumName', this.current_album.name);
                 });
             }
         }

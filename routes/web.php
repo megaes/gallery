@@ -18,11 +18,12 @@ Route::patch('/resources/{resource}', 'ResourceController@update');
 Route::post('/resources/delete', 'ResourceController@delete');
 
 Route::patch('/albums/{id}', 'AlbumController@update');
+Route::post('/albums/{id}/photo', 'AlbumController@uploadPhoto');
+Route::post('/albums/{id}/video', 'AlbumController@uploadVideo');
 Route::delete('/albums/{album}', 'AlbumController@delete');
 Route::get('/albums/{album}', 'AlbumController@get');
 Route::get('/albums', 'AlbumController@index');
 Route::post('/albums/create', 'AlbumController@create');
 
 Route::get('/', 'HomeController@index');
-Route::get('/thumbnails', 'HomeController@thumbnails');
 

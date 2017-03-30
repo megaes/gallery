@@ -76,12 +76,19 @@
             </div>
 
             <div :style="'padding-top: ' + frame.tn_aspect_ratio + '%'"></div>
+
+            <div v-if="video" style="display:none;" :id="'video' + frame.id">
+                <video class="lg-video-object lg-html5" controls preload="none">
+                    <source :src="path + frame.name + '.mp4'" type="video/mp4">
+                    Your browser does not support HTML5 video.
+                </video>
+            </div>
         </div>
 </template>
 
 <script>
     export default {
-        props: ['path', 'frame'],
+        props: ['path', 'video', 'frame'],
         methods: {
             captionUpdate() {
                 axios.patch('/resources/' + this.frame.id, {

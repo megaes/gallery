@@ -29,10 +29,10 @@
         computed: {
         },
         created() {
-            event.$on('turnThePage', (page) => {
+            event.$on('turnThePage', page => {
                 this.activePage = page;
             });
-            event.$on('setPageCount', (pageCount) => {
+            event.$on('setPageCount', pageCount => {
                 this.activePage = Math.min(this.activePage, pageCount);
                 this.pageCount = pageCount;
             });

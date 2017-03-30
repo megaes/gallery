@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Image;
 use App\Album;
 use App\Resource;
 use Illuminate\Support\Facades\Storage;
@@ -48,6 +49,11 @@ class AlbumController extends Controller
                 $resource->album_id = $newAlbum->id;
                 $resource->save();
             }
+            if($newAlbum->type == 'video') {
+                foreach($resources as $resource) {
+                    Storage::move("{$oldPath}{$resource->name}.mp4", "{$newPath}{$resource->name}.mp4");
+                }
+            }
         }
         return response()->json([ 'id' => $newAlbum->id, 'name' => $newAlbum->name, 'type' => $newAlbum->type]);
     }
@@ -86,6 +92,11 @@ class AlbumController extends Controller
                     $resource->album_id = $newAlbum->id;
                     $resource->save();
                 }
+                if($newAlbum->type == 'video') {
+                    foreach($resources as $resource) {
+                        Storage::move("{$oldPath}{$resource->name}.mp4", "{$newPath}{$resource->name}.mp4");
+                    }
+                }
             }
         } else if($request->has('name')) {
             $album = Album::find($id);
@@ -105,4 +116,54 @@ class AlbumController extends Controller
         Album::destroy($album->id);
         return '';
     }
+    public function uploadPhoto(Request $request, $id)
+    {
+        $album = Album::withCount('resources')->find($id);
+
+        if($album->user->id != Auth::id()) {
+            return response('Unauthorized operation!', 403);
+        }
+        if($album->resources_count >= Album::MAX_RESOURCE_COUNT) {
+            return response('Album size limit (' . Album::MAX_RESOURCE_COUNT . ' elements) is exceeded!', 403);
+        }
+        $file = $request->file('file');
+
+        $name = time().$file->getBasename();
+        $pathName = 'storage/'.$album->path().$name;
+
+        $img = Image::make($file->getPathname());
+        $img->save($pathName.'.jpg');
+
+        $aspectRatio = 100.0 * createThumbnail($pathName);
+
+        $frame = $album->resources()->create(['name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
+
+        return response()->json(['id' => $frame->id, 'name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
+    }
+    public function uploadVideo(Request $request, $id)
+    {
+        $album = Album::withCount('resources')->find($id);
+
+        if($album->user->id != Auth::id()) {
+            return response('Unauthorized operation!', 403);
+        }
+        if($album->resources_count >= Album::MAX_RESOURCE_COUNT) {
+            return response('Album size limit (' . Album::MAX_RESOURCE_COUNT . ' elements) is exceeded!', 403);
+        }
+        $file = $request->file('file');
+
+        $name = time().$file->getBasename();
+        $path = 'storage/'.$album->path();
+
+        $file->move($path, $name.'.mp4');
+
+        createPoster($path.$name);
+
+        $aspectRatio = 100.0 * createThumbnail($path.$name);
+
+        $frame = $album->resources()->create(['name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
+
+        return response()->json(['id' => $frame->id, 'name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
+    }
+
 }

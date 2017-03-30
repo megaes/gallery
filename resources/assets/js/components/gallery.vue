@@ -1,6 +1,6 @@
 <template>
     <div id="gallery">
-        <frame v-for="(frame, index) in frames" :path="path" :frame="frame" :key="frame.id" @showGallery="onShowGallery(index)" @delete="onDelete(index)"></frame>
+        <frame v-for="(frame, index) in frames" :path="path" :video="current_album.type == 'video'" :frame="frame" :key="frame.id" @showGallery="onShowGallery(index)" @delete="onDelete(index)"></frame>
         <modal-window id="delete-confirmation-modal" :options="modal_options" @clickAcceptBtn="onConfirmDelete"></modal-window>
     </div>
 </template>
@@ -14,6 +14,7 @@
                 frames: [],
                 path: '',
                 isotope: null,
+                current_album: null,
                 framesPerPage: 150,
                 page: 1,
                 modal_options: {
@@ -32,6 +33,22 @@
                 this.updateImageLoad();
                 this.$nextTick(() => this.updateIsotope());
             });
+            event.$on('addFrame', frame => {
+                this.frames.push({
+                    id: frame.id,
+                    name: frame.name,
+                    tn_aspect_ratio: frame.tn_aspect_ratio,
+                    caption: frame.caption,
+                    activity: 0,
+                    load: false
+                });
+                this.$nextTick(() => {
+                    let framesDOM = document.querySelectorAll('#gallery .gallery-frame');
+                    this.isotope.appended(framesDOM[this.frames.length - 1]);
+                    event.$emit('setPageCount', Math.max(1, Math.ceil(this.frames.length / this.framesPerPage)));
+                    event.$emit('turnThePage', this.page);
+                });
+            });
             event.$on('removeSelectedFrames', () => {
                 let framesDOM = document.querySelectorAll('#gallery .gallery-frame');
                 let selectedFramesDOM = [];
@@ -48,12 +65,12 @@
                 this.isotope.remove(selectedFramesDOM);
                 this.frames = frames;
 
-                const pageCount = Math.ceil(this.frames.length / this.framesPerPage);
+                const pageCount = Math.max(1, Math.ceil(this.frames.length / this.framesPerPage));
 
                 event.$emit('setPageCount', pageCount);
                 event.$emit('turnThePage', Math.min(this.page, pageCount));
             });
-            event.$on('loadAlbum', id => this.initGallery(id));
+            event.$on('loadAlbum', album => this.initGallery(album));
             event.$on('requestSelectedFrames', () => {
                 event.$emit('responseSelectedFrames', this.frames.filter(frame => frame.activity & 1).map(frame => frame.id));
             });
@@ -87,12 +104,13 @@
                 this.path = '';
                 event.$emit('setPageCount', 1);
             },
-            initGallery(album_id) {
-                if(!album_id) {
+            initGallery(album) {
+                this.current_album = album;
+                if(!album.id) {
                     this.clear();
                     return;
                 }
-                axios.get('/albums/' + album_id).then(response => {
+                axios.get('/albums/' + album.id).then(response => {
                     this.clear();
 
                     this.path = response.data.path;
@@ -115,7 +133,7 @@
                             layoutMode: 'masonry',
                             percentPosition: true
                         });
-                        event.$emit('setPageCount', Math.ceil(this.frames.length / this.framesPerPage));
+                        event.$emit('setPageCount', Math.max(1, Math.ceil(this.frames.length / this.framesPerPage)));
                         event.$emit('turnThePage', 1);
                     });
 
@@ -126,27 +144,57 @@
                 let data = [];
                 let newIndex = 0;
                 let selectedFrames = this.frames.filter(frame => frame.activity);
-                let frames = (selectedFrames.find( frame => frame.activity & 1) === 'undefined') ? this.frames : selectedFrames;
+                let frames = (selectedFrames.find(frame => frame.activity & 1) === undefined) ? this.frames : selectedFrames;
 
-                frames.forEach((frame, index) => {
-                    data.push({
-                        "src": this.path + frame.name + '.jpg',
-                        'thumb': this.path + frame.name + '-tn.jpg',
-                        'subHtml': '<h4>' + frame.caption + '</h4>'
+                if(this.current_album.type == 'photo') {
+                    frames.forEach((frame, index) => {
+                        data.push({
+                            "src": this.path + frame.name + '.jpg',
+                            'thumb': this.path + frame.name + '-tn.jpg',
+                            'subHtml': '<h4>' + frame.caption + '</h4>'
+                        });
+                        if (this.frames[id].id == frame.id) {
+                            newIndex = index;
+                        }
                     });
-                    if (this.frames[id].id == frame.id) {
-                        newIndex = index;
+                    $lightGallery.lightGallery({
+                        dynamic: true,
+                        index: newIndex,
+                        thumbnail: true,
+                        share: false,
+                        dynamicEl: data
+                    });
+                } else {
+                    frames.forEach((frame, index) => {
+                        data.push({
+                            'html': '#video' + frame.id,
+                            'poster': this.path + frame.name + '.jpg',
+                            'thumb': this.path + frame.name + '-tn.jpg',
+                            'subHtml': '<h4>' + frame.caption + '</h4>'
+                        });
+                        if (this.frames[id].id == frame.id) {
+                            newIndex = index;
+                        }
+                    });
+                    $lightGallery.lightGallery({
+                        dynamic: true,
+                        index: newIndex,
+                        thumbnail: true,
+                        share: false,
+                        zoom: false,
+                        download: false,
+                        fullScreen: false,
+                        autoplayControls: false,
+                        dynamicEl: data
+                    });
+                }
+                $lightGallery.one("onBeforeClose.lg",() => {
+                    let currentVideo = document.querySelector('.lg-video-playing video');
+                    if(currentVideo) {
+                        currentVideo.pause();
                     }
                 });
-
-                $lightGallery.lightGallery({
-                    dynamic: true,
-                    index: newIndex,
-                    thumbnail: true,
-                    share: false,
-                    dynamicEl: data
-                });
-                $lightGallery.one("onCloseAfter.lg", function() {
+                $lightGallery.one("onCloseAfter.lg",() => {
                     $lightGallery.data('lightGallery').destroy(true);
                 });
             },
@@ -182,7 +230,7 @@
                     this.isotope.remove(selectedFramesDOM);
                     this.frames = frames;
 
-                    const pageCount = Math.ceil(this.frames.length / this.framesPerPage);
+                    const pageCount = Math.max(1, Math.ceil(this.frames.length / this.framesPerPage));
 
                     event.$emit('setPageCount', pageCount);
                     event.$emit('turnThePage', Math.min(this.page, pageCount));

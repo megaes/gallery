@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Resource extends Model
 {
-    protected $fillable = ['caption'];
+    protected $fillable = ['name', 'caption', 'tn_aspect_ratio'];
 
     public function album()
     {

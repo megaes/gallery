@@ -1,12 +1,7 @@
 @extends('layouts.app')
 
 @section('gallery navbar')
-<li>
-    <a href="#">
-        <i class="fa fa-lg fa-upload" aria-hidden="true"></i>
-        Upload
-    </a>
-</li>
+<li is="uploader"></li>
 <li is="album-selector"></li>
 <li>
     <form class="navbar-form select2-tags">
