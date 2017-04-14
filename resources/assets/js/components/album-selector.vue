@@ -45,7 +45,6 @@
             }
         },
         mounted() {
-            event.$on('requestCurrentAlbum',() => event.$emit('responseCurrentAlbum', this.current_album)),
             event.$on('updateAlbumName', name => {
                 if(name) {
                     axios.patch('/albums/' + this.current_album.id, {

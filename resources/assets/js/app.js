@@ -15,6 +15,7 @@ require('./bootstrap');
 
 export const event = new Vue();
 
+Vue.component('tag-selector', require('./components/tag-selector.vue'));
 Vue.component('album-selector', require('./components/album-selector.vue'));
 Vue.component('uploader', require('./components/uploader.vue'));
 Vue.component('album', require('./components/album.vue'));
@@ -27,7 +28,7 @@ const app = new Vue({
     el: '#app'
 });
 
-function setDocumentNoscroll(check_aria_expand = null)
+function setDocumentNoscroll(check_aria_expand = false)
 {
     let aria_expanded = check_aria_expand ? document.getElementById('app-navbar-collapse').getAttribute('aria-expanded') : null;
     if(!aria_expanded || (aria_expanded == 'false')) {
@@ -36,7 +37,7 @@ function setDocumentNoscroll(check_aria_expand = null)
         document.documentElement.style.top = -scrollTop + 'px';
     }
 }
-function unsetDocumentNoscroll(check_aria_expand = null)
+function unsetDocumentNoscroll(check_aria_expand = false)
 {
     let aria_expanded = check_aria_expand ? document.getElementById('app-navbar-collapse').getAttribute('aria-expanded') : null;
     if(!aria_expanded || (aria_expanded == 'false')) {
@@ -45,10 +46,12 @@ function unsetDocumentNoscroll(check_aria_expand = null)
     }
 }
 
-$('.dropdown').on("show.bs.dropdown", () => setDocumentNoscroll('true'));
-$('.dropdown').on("hidden.bs.dropdown", () => unsetDocumentNoscroll('true'));
-$('#app-navbar-collapse').on("show.bs.collapse", () => setDocumentNoscroll());
-$('#app-navbar-collapse').on("hidden.bs.collapse", () => unsetDocumentNoscroll());
+$('select').on('select2:open', () => setDocumentNoscroll(true));
+$('select').on('select2:close', () => unsetDocumentNoscroll(true));
+$('.dropdown').on('show.bs.dropdown', () => setDocumentNoscroll(true));
+$('.dropdown').on('hidden.bs.dropdown', () => unsetDocumentNoscroll(true));
+$('#app-navbar-collapse').on('show.bs.collapse', () => setDocumentNoscroll());
+$('#app-navbar-collapse').on('hidden.bs.collapse', () => unsetDocumentNoscroll());
 
 $('.modal').on("show.bs.modal", function()
 {

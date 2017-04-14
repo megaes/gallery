@@ -42,3 +42,16 @@ if (!function_exists('createPoster')) {
         $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(0.5 * $duration))->save($pathName.'.jpg');
     }
 }
+
+if (!function_exists('queryBindings')) {
+    function queryBindings($count)
+    {
+        $result = '';
+        if($count) {
+            $result = '(';
+            for($i = 0; $i < $count; $result .= '?,', ++$i);
+            $result[2 * $count] = ')';
+        }
+        return $result;
+    }
+}

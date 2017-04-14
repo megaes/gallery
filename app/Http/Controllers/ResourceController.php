@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Resource;
+use App\Tag;
 use App\Album;
 
 class ResourceController extends Controller
@@ -15,41 +16,62 @@ class ResourceController extends Controller
     {
         $this->middleware('auth');
     }
-    public function update(Request $request, Resource $resource)
+    public function updateCaption(Request $request, Resource $resource)
     {
         if($resource->album->user->id != Auth::id()) {
             return response('Unauthorized operation!', 403);
         }
-        if ($request->has('caption')) {
-            $resource->update(['caption' => $request->input('caption')]);
+        $resource->update(['caption' => $request->input('caption','')]);
+        return '';
+    }
+    public function updateTags(Request $request)
+    {
+        $resources = Resource::with('tags')->findMany($request->input('frames', []));
+
+        if($resources->isEmpty()) {
+            return '';
         }
+        $album = $resources->first()->album;
+        if($resources->where('album_id', '!=', $album->id)->isNotEmpty() || ($album->user->id != Auth::id())) {
+            return response('Unauthorized operation!', 403);
+        }
+        $newTags = [];
+        $tags = $request->input('tags', []);
+        if(!empty($tags)) {
+            foreach(collect(array_fill_keys($tags, 0))->merge(Tag::whereIn('name', $tags)->get()->pluck('id', 'name')) as $key => $value) {
+                $newTags[] = $value ? $value : Tag::create(['name' => $key])->id;
+            }
+        }
+        foreach($resources as $resource) {
+            $resource->tags()->sync($newTags);
+        }
+        Tag::deleteSQL(
+            Tag::withCount('resources')->findMany(
+                $resources->pluck('tags')->flatten()->pluck('id')->unique()->all()
+            )->where('resources_count', 0)->pluck('id')->all()
+        );
         return '';
     }
     public function delete(Request $request)
     {
-        if($request->has('ids')) {
-            $ids = $request->input('ids');
-            $resources = Resource::findMany($ids, ["name", "album_id"]);
-            $album = $resources->first()->album;
-            $path = $album->path();
-            foreach($resources as $resource) {
-                if($resource->album_id != $album->id) {
-                    return response('Unauthorized operation!', 403);
-                }
-            }
-            if($album->user->id != Auth::id()) {
-                return response('Unauthorized operation!', 403);
-            }
-            foreach($resources as $resource) {
-                Storage::delete(["{$path}{$resource->name}-tn.jpg", "{$path}{$resource->name}.jpg"]);
-            }
-            if($album->type == 'video') {
-                foreach($resources as $resource) {
-                    Storage::delete("{$path}{$resource->name}.mp4");
-                }
-            }
-            Resource::destroy($ids);
+        $resources = Resource::findMany($request->input('ids', []));
+        if($resources->isEmpty()) {
+            return '';
         }
+        $album = $resources->first()->album;
+        $path = $album->path();
+        if($resources->where('album_id', '!=', $album->id)->isNotEmpty() || ($album->user->id != Auth::id())) {
+            return response('Unauthorized operation!', 403);
+        }
+        if($album->type == 'video') {
+            foreach($resources as $resource) {
+                Storage::delete("{$path}{$resource->name}.mp4");
+            }
+        }
+        foreach($resources as $resource) {
+            Storage::delete(["{$path}{$resource->name}-tn.jpg", "{$path}{$resource->name}.jpg"]);
+        }
+        Resource::deleteSQL($resources->pluck('id')->all());
         return '';
     }
 }

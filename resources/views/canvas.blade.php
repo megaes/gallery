@@ -3,20 +3,7 @@
 @section('gallery navbar')
 <li is="uploader"></li>
 <li is="album-selector"></li>
-<li>
-    <form class="navbar-form select2-tags">
-        <div class="input-group select2-bootstrap-append">
-            <select class="js-example-tags form-control" multiple="multiple">
-                <option selected="selected">orange</option>
-                <option>white</option>
-                <option selected="selected">purple</option>
-            </select>
-            <span class="input-group-btn">
-                <button class="btn btn-default" type="button">Filter</button>
-            </span>
-        </div>
-    </form>
-</li>
+<li is="tag-selector"></li>
 @endsection
 
 @section('content')

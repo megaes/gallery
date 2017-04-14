@@ -14,14 +14,16 @@
 
 Auth::routes();
 
-Route::patch('/resources/{resource}', 'ResourceController@update');
+Route::patch('/resources/{resource}', 'ResourceController@updateCaption');
+Route::patch('/resources', 'ResourceController@updateTags');
 Route::post('/resources/delete', 'ResourceController@delete');
 
 Route::patch('/albums/{id}', 'AlbumController@update');
 Route::post('/albums/{id}/photo', 'AlbumController@uploadPhoto');
 Route::post('/albums/{id}/video', 'AlbumController@uploadVideo');
 Route::delete('/albums/{album}', 'AlbumController@delete');
-Route::get('/albums/{album}', 'AlbumController@get');
+Route::get('/albums/{album}/resources', 'AlbumController@getResources');
+Route::get('/albums/{album}/tags', 'AlbumController@getTags');
 Route::get('/albums', 'AlbumController@index');
 Route::post('/albums/create', 'AlbumController@create');
 

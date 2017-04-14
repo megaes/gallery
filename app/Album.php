@@ -12,12 +12,12 @@ class Album extends Model
 
     public function resources()
     {
-        return $this->hasMany('App\Resource');
+        return $this->hasMany(Resource::class);
     }
 
     public function user()
     {
-        return $this->belongsTo('App\User');
+        return $this->belongsTo(User::class);
     }
 
     public function path()

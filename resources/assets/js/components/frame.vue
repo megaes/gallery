@@ -64,13 +64,13 @@
 </style>
 
 <template>
-        <div class="gallery-frame col-xs-6 col-sm-4 col-md-3 col-lg-2" :class="{'active': frame.activity}" @mouseover="frame.activity |= 10" @mouseleave="frame.activity &= 101">
+        <div class="gallery-frame col-xs-6 col-sm-4 col-md-3 col-lg-2" :class="{'active': frame.activity, 'visible': frame.visible}" @mouseover="frame.activity |= 10" @mouseleave="frame.activity &= 101">
 
             <img :class="{'lazyload' : frame.load}" :data-src="path + frame.name + '-tn.jpg'"> </img>
 
             <div class="controls">
                 <textarea maxlength="50" class="form-control" v-model="frame.caption" @click="frame.activity |= 100" @blur="frame.activity &= 11" @keydown.prevent.enter="captionUpdate"></textarea>
-                <i class="fa fa-lg" :class="[(frame.activity & 1) ? 'fa-check-square-o' : 'fa-square-o']" style="left: 15%; top: 6px;" @click="frame.activity ^= 1"></i>
+                <i class="fa fa-lg" :class="[(frame.activity & 1) ? 'fa-check-square-o' : 'fa-square-o']" style="left: 15%; top: 6px;" @click="select" @contextmenu.prevent="selectAll"></i>
                 <i class="fa fa-lg fa-search" style="left: 50%; top: 5px; margin-left: -0.5em" @click="$emit('showGallery')"></i>
                 <i class="fa fa-lg fa-times" style="right: 15%; top: 5px;" @click="$emit('delete')"></i>
             </div>
@@ -87,6 +87,8 @@
 </template>
 
 <script>
+    import { event } from '../app.js';
+
     export default {
         props: ['path', 'video', 'frame'],
         methods: {
@@ -94,7 +96,14 @@
                 axios.patch('/resources/' + this.frame.id, {
                     caption: this.frame.caption
                 });
-            }
+            },
+            select() {
+                this.frame.activity ^= 1;
+                event.$emit('frameSelect', this.frame.activity & 1);
+            },
+            selectAll() {
+                event.$emit('frameSelectAll', (this.frame.activity ^ 1) & 1);
+            },
         }
     }
 </script>

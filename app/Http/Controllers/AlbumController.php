@@ -22,8 +22,11 @@ class AlbumController extends Controller
     }
     public function create(Request $request)
     {
-        $frames = $request->input('frames');
-        $newAlbum = Auth::user()->albums()->create(['type' => $request->input('type'),'name' => 'New Album']);
+        if(!$request->has('type')) {
+            return response('Bad request!', 400);
+        }
+        $frames = $request->input('frames', []);
+        $newAlbum = Auth::user()->albums()->create(['type' => $request->input('type'), 'name' => 'New Album']);
         $newPath = $newAlbum->path();
         Storage::makeDirectory($newPath);
 
@@ -31,17 +34,15 @@ class AlbumController extends Controller
             $resources = Resource::findMany($frames);
             $oldAlbum = $resources->first()->album;
             $oldPath = $oldAlbum->path();
-            foreach($resources as $resource) {
-                if($resource->album_id != $oldAlbum->id) {
-                    Storage::deleteDirectory($newPath);
-                    Album::destroy($newAlbum->id);
-                    return response('Unauthorized operation!', 403);
-                }
-            }
-            if($oldAlbum->user->id != Auth::id()) {
+            if($resources->where('album_id', '!=', $oldAlbum->id)->isNotEmpty() || ($oldAlbum->user->id != Auth::id())) {
                 Storage::deleteDirectory($newPath);
-                Album::destroy($newAlbum->id);
+                $newAlbum->delete();
                 return response('Unauthorized operation!', 403);
+            }
+            if($oldAlbum->type != $newAlbum->type) {
+                Storage::deleteDirectory($newPath);
+                $newAlbum->delete();
+                return response('Bad request!', 400);
             }
             foreach($resources as $resource) {
                 Storage::move("{$oldPath}{$resource->name}-tn.jpg", "{$newPath}{$resource->name}-tn.jpg");
@@ -57,28 +58,54 @@ class AlbumController extends Controller
         }
         return response()->json([ 'id' => $newAlbum->id, 'name' => $newAlbum->name, 'type' => $newAlbum->type]);
     }
-    public function get(Album $album)
+    public function getResources(Album $album)
     {
         if($album->user->id != Auth::id()) {
             return response('Unauthorized operation!', 403);
         }
-        $resources = DB::select('select id, name, caption, tn_aspect_ratio from resources where resources.album_id = ?', [$album->id]);
-        return response()->json(['frames' => $resources, 'path' => 'storage/'.$album->path()]);
+        $resources = [];
+        foreach(DB::select('select id, name, caption, tn_aspect_ratio from resources where resources.album_id = ?', [$album->id]) as $resource) {
+            $resource->tags = [];
+            $resources[$resource->id] = $resource;
+        }
+        if(!empty($resources)) {
+            $query = 'select tags.name, resource_tag.resource_id as pivot_resource_id from tags inner join resource_tag on tags.id = resource_tag.tag_id where resource_tag.resource_id in ';
+            foreach(DB::select($query.queryBindings(count($resources)), array_keys($resources)) as $tag) {
+                $resources[$tag->pivot_resource_id]->tags[] = $tag->name;
+            }
+        }
+        return response()->json(['frames' => array_values($resources), 'path' => 'storage/'.$album->path()]);
+    }
+    public function getTags(Album $album)
+    {
+        if($album->user->id != Auth::id()) {
+            return response('Unauthorized operation!', 403);
+        }
+        $tags = [];
+        $resources = [];
+        foreach(DB::select('select id from resources where resources.album_id = ?', [$album->id]) as $resource) {
+            $resources[] = $resource->id;
+        }
+        if(!empty($resources)) {
+            $query = 'select tags.name from tags inner join resource_tag on tags.id = resource_tag.tag_id where resource_tag.resource_id in ';
+            foreach(DB::select($query.queryBindings(count($resources)), $resources) as $tag) {
+                $tags[$tag->name] = 1;
+            }
+        }
+        return array_keys($tags);
     }
     public function update(Request $request, $id)
     {
         if($request->has('frames')) {
-            $frames = $request->input('frames');
-            if(!empty($frames)) {
-                $resources = Resource::findMany($frames);
+            $resources = Resource::findMany($request->input('frames'));
+            if($resources->isNotEmpty()) {
                 $oldAlbum = $resources->first()->album;
                 $newAlbum = Album::withCount('resources')->find($id);
-                foreach($resources as $resource) {
-                    if($resource->album_id != $oldAlbum->id) {
-                        return response('Unauthorized operation!', 403);
-                    }
-                }
-                if(($oldAlbum->user->id != Auth::id()) || ($newAlbum->user->id != Auth::id())) {
+                if(
+                    $resources->where('album_id', '!=', $oldAlbum->id)->isNotEmpty() ||
+                    ($oldAlbum->user->id != Auth::id()) ||
+                    ($newAlbum->user->id != Auth::id())
+                ) {
                     return response('Unauthorized operation!', 403);
                 }
                 if($newAlbum->resources_count + $resources->count() > Album::MAX_RESOURCE_COUNT) {
@@ -113,12 +140,12 @@ class AlbumController extends Controller
             return response('Unauthorized operation!', 403);
         }
         Storage::deleteDirectory($album->path());
-        Album::destroy($album->id);
+        $album->delete();
         return '';
     }
     public function uploadPhoto(Request $request, $id)
     {
-        $album = Album::withCount('resources')->find($id);
+        $album = Album::withCount('resources')->findOrFail($id);
 
         if($album->user->id != Auth::id()) {
             return response('Unauthorized operation!', 403);
@@ -138,11 +165,11 @@ class AlbumController extends Controller
 
         $frame = $album->resources()->create(['name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
 
-        return response()->json(['id' => $frame->id, 'name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
+        return response()->json(['id' => $frame->id, 'name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '', 'tags' => []]);
     }
     public function uploadVideo(Request $request, $id)
     {
-        $album = Album::withCount('resources')->find($id);
+        $album = Album::withCount('resources')->findOrFail($id);
 
         if($album->user->id != Auth::id()) {
             return response('Unauthorized operation!', 403);
@@ -163,7 +190,7 @@ class AlbumController extends Controller
 
         $frame = $album->resources()->create(['name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
 
-        return response()->json(['id' => $frame->id, 'name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '']);
+        return response()->json(['id' => $frame->id, 'name' => $name, 'tn_aspect_ratio' => $aspectRatio, 'caption' => '', 'tags' => []]);
     }
 
 }

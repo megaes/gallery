@@ -24,25 +24,25 @@
     export default {
         data() {
             return {
-                dropzone: null
+                dropzone: null,
+                current_album: {id: 0}
             }
         },
         mounted() {
+            event.$on('loadAlbum', album => this.current_album = album);
+
             document.getElementById('dropzone').classList.add('dropzone');
             this.dropzone = new Dropzone('#dropzone', {url: '/', maxFilesize: 200, headers: {'X-CSRF-TOKEN' : Laravel.csrfToken}});
             this.dropzone.on('success', (file, response) => event.$emit('addFrame', response));
         },
         methods: {
             showModal() {
-                event.$once('responseCurrentAlbum', album => {
-                    if(album.id < 1) {
-                        return;
-                    }
-                    this.dropzone.options.url = '/albums/' + album.id + '/' + album.type;
-                    this.dropzone.options.acceptedFiles = (album.type == 'video') ? '.mp4' : '.jpg, .jpeg, .png, .bmp, .tif';
-                    $('#upload').modal('show');
-                });
-                event.$emit('requestCurrentAlbum');
+                if(!this.current_album.id) {
+                    return;
+                }
+                this.dropzone.options.url = '/albums/' + this.current_album.id + '/' + this.current_album.type;
+                this.dropzone.options.acceptedFiles = (this.current_album.type == 'video') ? '.mp4' : '.jpg, .jpeg, .png, .bmp, .tif';
+                $('#upload').modal('show');
             },
             closeModal() {
                 this.dropzone.removeAllFiles(true);

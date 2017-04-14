@@ -83,11 +83,5 @@
 
     <!-- Scripts -->
     <script src="{{ mix('/js/app.js') }}"></script>
-    <script>
-        $(".js-example-tags").select2({
-            tags: true,
-            width: ''
-        })
-    </script>
 </body>
 </html>
