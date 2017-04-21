@@ -7,6 +7,8 @@
 
 <script>
     import { event } from '../app.js';
+    import Frame from '../classes/Frame.js';
+    import ModalOptions from '../classes/ModalOptions.js';
 
     export default {
         data() {
@@ -18,14 +20,7 @@
                 tags: [],
                 framesPerPage: 150,
                 page: 1,
-                modal_options: {
-                    title: '',
-                    body: '',
-                    textAcceptBtn: '',
-                    textCancelBtn: '',
-                    isCancelBtn: '',
-                    data: {}
-                }
+                modal_options: new ModalOptions('Confirm', 'Are you sure you want to delete?', 'Yes', 'No', true)
             };
         },
         mounted() {
@@ -34,22 +29,11 @@
                 let min = (this.page - 1)*this.framesPerPage;
                 let max = this.page * this.framesPerPage;
                 let counter = -1;
-                this.frames.forEach(frame => {
-                    frame.visible = this.hasTags(frame) ? (++counter >= min) && (counter < max) : false;
-                    frame.load |= frame.visible;
-                });
+                this.frames.forEach(frame => frame.visible = frame.hasTags(this.tags) ? (++counter >= min) && (counter < max) : false);
                 this.$nextTick(() => this.isotope.arrange());
             });
-            event.$on('addFrame', frame => {
-                this.frames.push({
-                    id: frame.id,
-                    name: frame.name,
-                    tn_aspect_ratio: frame.tn_aspect_ratio,
-                    caption: frame.caption,
-                    activity: 0,
-                    visible: false,
-                    load: false
-                });
+            event.$on('addFrame',frame => {
+                this.frames.push(new Frame(frame.id, frame.name, frame.tn_aspect_ratio, frame.caption));
                 this.$nextTick(() => {
                     let framesDOM = document.querySelectorAll('#gallery .gallery-frame');
                     this.isotope.appended(framesDOM[this.frames.length - 1]);
@@ -63,7 +47,7 @@
                 let frames = [];
 
                 this.frames.forEach( (frame, i) => {
-                    if(frame.activity & 1) {
+                    if(frame.select) {
                         selectedFramesDOM.push(framesDOM[i]);
                     } else {
                         frames.push(frame);
@@ -77,22 +61,12 @@
             });
             event.$on('loadAlbum', album => this.initGallery(album));
             event.$on('requestSelectedFrames', () => {
-                event.$emit('responseSelectedFrames', this.frames.filter(frame => frame.activity & 1).map(frame => frame.id));
+                event.$emit('responseSelectedFrames', this.frames.filter(frame => frame.select).map(frame => frame.id));
             });
             event.$on('frameSelectAll', selection => {
-                let count = 0;
-                if(selection) {
-                    this.frames.forEach(frame => {
-                        if(this.hasTags(frame)) {
-                            ++count;
-                            frame.activity = (frame.activity & ~1) | selection;
-                        }
-                    });
-                } else {
-                    count = this.frames.length;
-                    this.frames.forEach(frame => frame.activity &= ~1);
-                }
-                event.$emit('frameSelectAllResult', selection, count);
+                let frames = selection ? this.frames.filter(frame => frame.hasTags(this.tags)) : this.frames;
+                frames.forEach(frame => frame.select = selection);
+                event.$emit('frameSelectAllResult', selection, frames.length);
             });
             event.$on('filterFrames', tags => {
                 this.tags = tags;
@@ -100,7 +74,7 @@
                 event.$emit('turnThePage', 1);
             });
             event.$on('applyTags', tags => {
-                let selectedFrames = this.frames.filter(frame => frame.activity & 1);
+                let selectedFrames = this.frames.filter(frame => frame.select);
                 axios.patch('/resources', {
                     frames: selectedFrames.map(frame => frame.id),
                     tags: tags
@@ -121,14 +95,9 @@
                 this.path = '';
                 event.$emit('setPageCount', 1);
             },
-            hasTags(frame) {
-                let i = this.tags.length;
-                while((--i >= 0) && (frame.tags.indexOf(this.tags[i]) != -1));
-                return (i < 0);
-            },
             setPageCount() {
                 let frameCount = 0;
-                this.frames.forEach(frame => frameCount += this.hasTags(frame));
+                this.frames.forEach(frame => frameCount += frame.hasTags(this.tags));
                 const pageCount = Math.max(1, Math.ceil(frameCount / this.framesPerPage));
                 event.$emit('setPageCount', pageCount);
                 return pageCount;
@@ -144,18 +113,9 @@
 
                     this.path = response.data.path;
 
-                    response.data.frames.forEach(item => {
-                        this.frames.push({
-                            id: item.id,
-                            name: item.name,
-                            tn_aspect_ratio: item.tn_aspect_ratio,
-                            caption: item.caption,
-                            tags: item.tags,
-                            activity: 0,
-                            visible: false,
-                            load: false
-                        });
-                    });
+                    response.data.frames.forEach(item => this.frames.push(
+                        new Frame(item.id, item.name, item.tn_aspect_ratio, item.caption, item.tags)
+                    ));
 
                     this.$nextTick( () => {
                         this.isotope = new Isotope( document.getElementById('gallery'), {
@@ -174,8 +134,8 @@
             onShowGallery(id) {
                 let $lightGallery = $('#gallery');
                 let data = [];
-                let selectedFrames = this.frames.filter(frame => frame.activity);
-                let frames = (selectedFrames.find(frame => frame.activity & 1) === undefined) ? this.frames : selectedFrames;
+                let selectedFrames = this.frames.filter(frame => frame.active);
+                let frames = (selectedFrames.find(frame => frame.select) === undefined) ? this.frames : selectedFrames;
                 let index = frames.findIndex(frame => id == frame.id);
 
                 if(this.current_album.type == 'photo') {
@@ -225,14 +185,7 @@
                 });
             },
             onDelete(id) {
-                this.modal_options = {
-                    title: 'Confirm',
-                    body: 'Are you sure you want to delete?',
-                    textAcceptBtn: 'Yes',
-                    textCancelBtn: 'No',
-                    isCancelBtn: 'yes',
-                    data: { id: id }
-                };
+                this.modal_options.data = { id: id };
                 $('#delete-confirmation-modal').modal('show');
             },
             onConfirmDelete(data) {
@@ -242,7 +195,7 @@
                 let selectedIDs = [];
 
                 this.frames.forEach( (frame, i) => {
-                    if(frame.activity || (frame.id == data.id)) {
+                    if(frame.active || (frame.id == data.id)) {
                         selectedFramesDOM.push(framesDOM[i]);
                         selectedIDs.push(frame.id);
                     } else {

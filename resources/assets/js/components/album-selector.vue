@@ -18,25 +18,16 @@
 
 <script>
     import { event } from '../app.js';
+    import Album from '../classes/Album.js';
+    import ModalOptions from '../classes/ModalOptions.js';
 
     export default {
         data() {
             return {
               albums: [],
               type: 'photo',
-              current_album: {
-                  id: -1,
-                  name: '',
-                  type: 'photo'
-              },
-              modal_options: {
-                  title: '',
-                  body: '',
-                  textAcceptBtn: '',
-                  textCancelBtn: '',
-                  isCancelBtn: '',
-                  data: {}
-              }
+              current_album: new Album('photo', -1),
+              modal_options: new ModalOptions()
             };
         },
         computed: {
@@ -59,9 +50,8 @@
                 }
             });
             axios.get('/albums').then(response => {
-                let defaultAlbum = response.data.find(album => album.type == this.type);
                 this.albums = response.data;
-                this.loadAlbum((defaultAlbum === undefined) ? {id: 0, name: '', type: this.type} : defaultAlbum);
+                this.loadAlbum(this.albums.find(album => album.type == this.type) || new Album(this.type));
             });
         },
         methods: {
@@ -79,14 +69,7 @@
                         }).then(() => {
                             event.$emit('removeSelectedFrames');
                         }).catch(error => {
-                            this.modal_options = {
-                                title: 'Error',
-                                body: error.response.data ? error.response.data : error.message,
-                                textAcceptBtn: 'Ok',
-                                textCancelBtn: '',
-                                isCancelBtn: '',
-                                data: {}
-                            };
+                            this.modal_options = new ModalOptions('Error', error.response.data ? error.response.data : error.message, 'Ok');
                             $('#album-size-modal').modal('show');
                         });
                     } else {
@@ -118,14 +101,7 @@
                 if(this.current_album.id < 1) {
                     return;
                 }
-                this.modal_options = {
-                    title: 'Confirm',
-                    body: 'Are you sure you want to delete the album?',
-                    textAcceptBtn: 'Yes',
-                    textCancelBtn: 'No',
-                    isCancelBtn: 'yes',
-                    data: {}
-                };
+                this.modal_options = new ModalOptions('Confirm', 'Are you sure you want to delete the album?', 'Yes', 'No', true);
                 $('#album-size-modal').modal('show');
             },
             onClickAcceptBtn() {
@@ -134,8 +110,7 @@
                 }
                 axios.delete('/albums/' + this.current_album.id).then(() => {
                     this.albums = this.albums.filter(album => album.id != this.current_album.id);
-                    let defaultAlbum = this.albums.find(album => album.type == this.type);
-                    this.current_album = (defaultAlbum === undefined) ? {id: 0, name: '', type: this.type} : defaultAlbum;
+                    this.current_album = this.albums.find(album => album.type == this.type) || new Album(this.type);
                     event.$emit('loadAlbum', this.current_album);
                     event.$emit('setAlbumName', this.current_album.name);
                 });
