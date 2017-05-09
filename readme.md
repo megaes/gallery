@@ -1,7 +1,6 @@
-
 ![Gallery](https://raw.githubusercontent.com/megaes/gallery/master/public/gallery.jpg)
 
-##Key components
+<h2>Key components</h2>
 
 - Laravel 5.x
 - Bootstrap 3.x
