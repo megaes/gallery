@@ -2,7 +2,7 @@
 
 <h2>Description</h2>
 This test project is a photo/video gallery. Logged user able to create albums with specific photo/video resources for viewing in slideshow mode. 
-
+<br/>
 Supported features:
 
 - moving resources between albums
